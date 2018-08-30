@@ -8,6 +8,5 @@ class IdGenretator {
     }
     
 };
-//const id = new IdGenretator(); 
 
 export default new IdGenretator();

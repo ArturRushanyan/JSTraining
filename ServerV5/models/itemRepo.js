@@ -10,49 +10,69 @@ class ItemRepository {
     }
 
     getAll() {
-        return (this.Items);
+        return new Promise( (resolve, reject) => {
+            if(this.Items) {
+                resolve(this.Items);
+            };
+            reject();
+        });
     }
 
     getById(req,res) {
-        const id1 = req.params.id;
-        const itemId = this.Items.find((todo) => {
-            return todo.id === Number(id1);
+        return new Promise ((resolve, reject) => {
+            const id = req.params.id;
+            const itemId = this.Items.find((item) => {
+                return item.id === Number(id);
+            });
+            if(itemId) {
+                resolve(itemId);
+            }
+            //reject('undefined id');
+            reject();
         });
-        if(itemId) {
-            return itemId;
-        } else {
-            return 'undefind id';
-        }  
     }
 
     save(req,res) {
-        const {type,title,price} = req.body;
-        const id = idGen.id();
-        console.log('save id: ' + id);
-        const newItem = {id,type,title,price}; 
-        this.Items.push(newItem);
-        return ('New item added');
-        res.sendStatus(200);
+        return new Promise((resolve, reject) => {
+            const {type,title,price} = req.body;
+            if({type,title,price}) {
+                const id = idGen.id();
+                console.log('save id: ' + id);
+                const newItem = {id,type,title,price};
+                this.Items.push(newItem);
+                resolve(newItem);
+            }
+            reject('error');
+            
+        });
     }
 
-    update( id1, req, res) {    //
-        const id = parseInt(id1);
-        const updateItme = req.body;
-        if(this.Items[id] != null ) {
-            this.Items[id] = updateItme;
-        }  
-        res.sendStatus(200); 
+    update( req, res) {
+        const id = parseInt(req.params.id); 
+        return new Promise ((resolve, reject) => {
+            if(id <= 0 || id > this.Items.length) {
+                reject();
+            }
+            this.Items[id - 1].type = req.body.type;
+            this.Items[id - 1].title = req.body.title;
+            this.Items[id - 1].price = req.body.price;
+            resolve();
+        });
     }
 
     remove(req,res) {
-        const reqId = req.params.id;
-        const item = this.Items.filter( (item) => {
-            return item.id == reqId;
+        return new Promise((resolve, reject) => {
+            const reqId = req.params.id;
+            const item = this.Items.filter( (item) => {
+                return item.id == reqId;
+            });
+            if(item) {
+                const index = this.Items.indexOf(item);
+                this.Items.splice(index - 1,1);
+                resolve('Item has been deleted');        
+            }        
+            reject('fail');
         });
-
-        const index = this.Items.indexOf(item);
-        this.Items.splice(index,1);
-        res.send('Item has been deleted');
     }
 };
 

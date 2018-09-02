@@ -1,58 +1,105 @@
 import  itemRepo from '../../models/itemRepo';
 import errors from '../../helpers/errorMessage';
 
-const getAll = function(req, res) {
-    /*res.status((itemRepo.getAll()).then((items) => {
-        res.status(200).json(items);
-    }).catch((err) =>{
-        errors.sendError(res, 400, err);
-    })); */
-    itemRepo.getAll().then((items) => {
-        res.status(200).json(items);
-    }).catch((err) =>{
-        errors.sendError(res, 400, err);
-    });
-};
 
-
-const get = function(req, res) {
-    itemRepo.getById(req,res).then((item) => {
-        res.status(200).json(item);
-    }).catch(() =>{
-        errors.sendError(res, 400, 'Item not found');
-    });
-};
-
-const update = function(req, res) {
-    
-    itemRepo.update( req, res).then(() => {
-        res.status(200).json('OK');
+exports.getAll = (req, res) => {
+    itemRepo.find().then((Items) => {
+        res.send(Items);
     }).catch((err) => {
-        errors.sendError(res,400,err);
-    });
-    //res.send(itemRepo.update(req.params.id, req, res));
-};
-
-const create = function(req, res) {
-    itemRepo.save(req,res).then((item) => {
-        res.status(200).json(item);   
-    }).catch((err) =>{
         errors.sendError(res, 400, err);
     });
 };
 
-const remove  = function(req, res) {
-    itemRepo.remove(req,res).then(() => {
-        res.status(200).json('OK');
-    }).catch((err) =>{
+
+exports.get = (req, res) => {
+    itemRepo.findById(req.params.id).then((item) => {
+        if(!item) {
+            return res.status(404).send({
+                message: "Item not found with id " + req.params.id
+            });            
+        }
+        res.send(item);
+    }).catch((err) => {
         errors.sendError(res, 400, err);
     });
 };
 
-export {
-    getAll,
-    get,
-    update,
-    create,
-    remove
+
+exports.create = (req, res) => {
+    if(!req.body.type || !req.body.title || !req.body.price) {
+        return res.status(400).send({
+            message: "Item body can not be empty"
+        });
+    }
+
+    const Item = new itemRepo({
+        type: req.body.type, 
+        title: req.body.title,  
+        price: req.body.price
+    });
+
+    Item.save().then((data) => {
+        res.send(data);
+    }).catch(err => {
+        res.status(500).send({
+            message: err.message || "Some error occurred while creating the Item."
+        });
+    });
 };
+
+
+exports.update = (req, res) => {
+    if(!req.body.type || !req.body.title) {
+        return res.status(400).send( {
+            message: "Item body can not be empty"
+        });
+    }
+
+    itemRepo.findByIdAndUpdate(req.params.id, {
+        type: req.body.type,
+        title: req.body.title,
+        price: req.body.price
+    }, {new: true})
+    .then((item) => {
+        if(!item) {
+            return res.status(404).send({
+                message: "Item not found with id " + req.params.itemId
+            });
+        }
+        res.send(item);
+    }).catch((err) => {
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "Item not found with id " + req.params.itemId
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating item with id " + req.params.itemId
+        });
+    });
+};
+
+
+exports.remove = (req, res) => {
+    itemRepo.findByIdAndRemove(req.params.id)
+    .then((item) => {
+        if(!item) {
+            return res.status(404).send({
+                message: "Item not found with id " + req.params.itemId
+            });
+        }
+        res.send({message: "Item deleted successfully!"});
+    }).catch((err) => {
+        if(err.kind === 'ObjectId' || err.name === 'NotFound') {
+            return res.status(404).send({
+                message: "Item not found with id " + req.params.itemId
+            });                
+        }
+        return res.status(500).send({
+            message: "Could not delete Item with id " + req.params.itemId
+        });
+    });
+};
+
+
+

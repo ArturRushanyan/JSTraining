@@ -4,6 +4,7 @@ import * as itemController from './item.controller';
 const router = express.Router();
 
 router.get('/', itemController.getAll);
+
 router.get('/:id', itemController.get);
 
 router.put('/:id', itemController.update);

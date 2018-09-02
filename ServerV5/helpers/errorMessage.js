@@ -11,4 +11,4 @@ class Errors {
     }
 }
 
-export default new Errors;
+export default new Errors();

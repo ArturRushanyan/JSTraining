@@ -4,15 +4,22 @@ import bodyParser from 'body-parser';
 import config from './config';
 import routes from './routes/index';
 import logger from 'morgan';
-import mongoose  from 'mongoose';
+import mongoose from 'mongoose';
+import passport from 'passport';
+import expressSession from 'express-session';
+import flash from 'connect-flash';
+import initPassport from './passport/init';
 
 
 const app = express();
 app.use(logger('dev'));
 app.use(bodyParser.json());
+app.use(expressSession({secret: 'mySecretKey'}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
 
-mongoose.Promise = global.Promise;
 mongoose.connect(config.Db.url, {
     useNewUrlParser: true
 }).then(() => {
@@ -22,7 +29,10 @@ mongoose.connect(config.Db.url, {
     process.exit();
 });
 
+
+initPassport(passport);
 routes(app);
+
 
 app.listen(config.port, () => {
   console.log('Server is up!');

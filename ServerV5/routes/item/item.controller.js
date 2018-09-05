@@ -10,7 +10,6 @@ exports.getAll = (req, res) => {
     });
 };
 
-
 exports.get = (req, res) => {
     itemRepo.findById(req.params.id).then((item) => {
         if(!item) {
@@ -23,7 +22,6 @@ exports.get = (req, res) => {
         errors.sendError(res, 400, err);
     });
 };
-
 
 exports.create = (req, res) => {
     if(!req.body.type || !req.body.title || !req.body.price) {
@@ -46,7 +44,6 @@ exports.create = (req, res) => {
         });
     });
 };
-
 
 exports.update = (req, res) => {
     if(!req.body.type || !req.body.title) {
@@ -78,7 +75,6 @@ exports.update = (req, res) => {
         });
     });
 };
-
 
 exports.remove = (req, res) => {
     itemRepo.findByIdAndRemove(req.params.id)

@@ -1,35 +1,58 @@
-import  userRepo from '../../models/userRepo';
+import  UserRepo from '../../models/userRepo';
 import errors from '../../helpers/errorMessage';
 
-const getAll = function(req, res) {
-    userRepo.getAll().then((users) => {
-        res.status(200).json(users);
+exports.getAll = (req, res) => {
+    UserRepo.find().then((User) => {
+        res.send(User);
+    }).catch((err) => {
+        errors.sendError(res, 400, err);
+    });
+};
+
+exports.get = (req, res) => {
+    UserRepo.findById(req.params.id).then((user) => {
+        if(!user) {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.id
+            });            
+        }
+        res.send(user);
     }).catch((err) => {
         errors.sendError(res, 400, err);
     });
 };
 
 
-const get = function(req, res) {
-    userRepo.getById(req,res).then((user) => {
-        res.status(200).json(user);
+exports.update = (req, res) => {
+    if(!req.body.type) {
+        return res.status(400).send( {
+            message: "User body can not be empty"
+        });
+    }
+
+    UserRepo.findByIdAndUpdate(req.params.id, {
+        type: req.body.type,
+    })
+    .then((user) => {
+        if(!user) {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.userId
+            });
+        }
+        res.send(user);
     }).catch((err) => {
-        errors.sendError(res, 400, err);
+        if(err.kind === 'ObjectId') {
+            return res.status(404).send({
+                message: "User not found with id " + req.params.userId
+            });                
+        }
+        return res.status(500).send({
+            message: "Error updating user with id " + req.params.userId
+        });
     });
 };
 
-const update = function(req, res) {
-    userRepo.update( req, res).then(() => {
-        res.status(200).send('OK');
-    }).catch((err) => {
-        errors.sendError(res, 400, err);
-    });
-};
 
 
 
-export {
-    getAll,
-    get,
-    update,
-};
+

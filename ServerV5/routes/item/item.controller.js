@@ -1,9 +1,9 @@
-import  itemRepo from '../../models/itemRepo';
+import  ItemRepo from '../../models/itemRepo';
 import errors from '../../helpers/errorMessage';
 
 
 exports.getAll = (req, res) => {
-    itemRepo.find().then((Items) => {
+    ItemRepo.find().then((Items) => {
         res.send(Items);
     }).catch((err) => {
         errors.sendError(res, 400, err);
@@ -11,7 +11,7 @@ exports.getAll = (req, res) => {
 };
 
 exports.get = (req, res) => {
-    itemRepo.findById(req.params.id).then((item) => {
+    ItemRepo.findById(req.params.id).then((item) => {
         if(!item) {
             return res.status(404).send({
                 message: "Item not found with id " + req.params.id
@@ -30,10 +30,12 @@ exports.create = (req, res) => {
         });
     }
 
-    const Item = new itemRepo({
+    const Item = new ItemRepo({
         type: req.body.type, 
         title: req.body.title,  
-        price: req.body.price
+        price: req.body.price,
+        count: req.body.count
+
     });
 
     Item.save().then((data) => {
@@ -52,10 +54,11 @@ exports.update = (req, res) => {
         });
     }
 
-    itemRepo.findByIdAndUpdate(req.params.id, {
+    ItemRepo.findByIdAndUpdate(req.params.id, {
         type: req.body.type,
         title: req.body.title,
-        price: req.body.price
+        price: req.body.price,
+        count: req.body.count
     }, {new: true})
     .then((item) => {
         if(!item) {
@@ -77,7 +80,7 @@ exports.update = (req, res) => {
 };
 
 exports.remove = (req, res) => {
-    itemRepo.findByIdAndRemove(req.params.id)
+    ItemRepo.findByIdAndRemove(req.params.id)
     .then((item) => {
         if(!item) {
             return res.status(404).send({
